@@ -1,0 +1,1 @@
+SELECT * FROM `asset_management`.`assets`;
