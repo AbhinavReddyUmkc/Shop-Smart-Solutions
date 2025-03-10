@@ -1,19 +1,40 @@
+import React, { useEffect, useState } from "react";
+
 function ThreatDashboard() {
+  // State to store threat data
+  const [threats, setThreats] = useState([]);
+
+  // Fetch TVA data from the backend when the page loads
+  useEffect(() => {
+    fetch("/api/tva") // API endpoint to get data
+      .then((response) => response.json())
+      .then((data) => setThreats(data))
+      .catch((error) => console.error("Error fetching TVA data:", error));
+  }, []);
+
   return (
     <div>
-      <h1>Real-Time Threat Intelligence</h1>
-      <div className="threat-logs">
-        <h2>Threat Logs</h2>
-        <p>Live Threat Updates will be displayed here.</p>
-      </div>
-      <div className="risk-scores">
-        <h2>Risk Scores</h2>
-        <p>Risk scores will be displayed here.</p>
-      </div>
-      <div className="real-time-alerts">
-        <h2>Real-Time Alerts</h2>
-        <p>Real-time alerts will be displayed here.</p>
-      </div>
+      <h2>Threat Intelligence Dashboard</h2>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Asset ID</th>
+            <th>Threat</th>
+            <th>Vulnerability</th>
+            <th>Risk Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {threats.map((threat, index) => (
+            <tr key={index}>
+              <td>{threat.asset_id}</td>
+              <td>{threat.threat_name}</td>
+              <td>{threat.vulnerability_description}</td>
+              <td>{threat.risk_score}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
