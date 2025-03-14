@@ -18,7 +18,7 @@ Below is the selected technology stack for the **Real-Time Threat Intelligence (
 |--------------------------|-------------------------------|---------------------------------------------------------------------------------|
 | **Back-End**             | Flask (Python)                | A lightweight and flexible Python web framework for building APIs and handling server-side logic. |
 | **Front-End**            | React.js                      | A popular JavaScript library for building dynamic and responsive user interfaces. |
-| **Database**             | MongoDB (NoSQL)               | A NoSQL database that stores data in JSON-like documents, ideal for scalable and flexible data storage. |
+| **Database**             | PostgreSQL (SQL)               |  |
 | **OSINT API**            | Shodan, Have I Been Pwned, VirusTotal | APIs for gathering threat intelligence, including exposed services, breached credentials, and malware analysis. |
 | **LLM Model for Risk Scoring** | OpenAI GPT-4 API         | A state-of-the-art language model for analyzing and scoring cybersecurity risks based on threat data. |
 
