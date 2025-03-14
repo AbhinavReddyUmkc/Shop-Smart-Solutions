@@ -39,3 +39,15 @@ CREATE TABLE risk_ratings (
     overall_risk_level INT CHECK (overall_risk_level BETWEEN 1 AND 10),
     calculated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Table for TVA Mapping (Threat-Vulnerability-Asset)
+CREATE TABLE tva_mapping (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    asset_id INT,
+    threat_name VARCHAR(255),
+    vulnerability_description TEXT,
+    likelihood INT CHECK (likelihood BETWEEN 1 AND 5),
+    impact INT CHECK (impact BETWEEN 1 AND 5),
+    risk_score INT GENERATED ALWAYS AS (likelihood * impact) STORED,
+    FOREIGN KEY (asset_id) REFERENCES assets(id)
+);
