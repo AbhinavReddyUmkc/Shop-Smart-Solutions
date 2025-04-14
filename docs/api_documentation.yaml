@@ -1,0 +1,377 @@
+openapi: 3.0.0
+info:
+  title: Threat Intelligence API
+  description: API for accessing real-time threat data and automated security responses
+  version: 1.0.0
+servers:
+  - url: https://api.threatintel.example.com/v1
+    description: Production server
+  - url: https://api-test.threatintel.example.com/v1
+    description: Testing server
+paths:
+  /threats:
+    get:
+      summary: Retrieve all detected threats
+      description: Returns a list of all threats detected by the system
+      parameters:
+        - name: severity
+          in: query
+          description: Filter by threat severity
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: type
+          in: query
+          description: Filter by threat type
+          schema:
+            type: string
+        - name: timeframe
+          in: query
+          description: Time range for threat detection
+          schema:
+            type: string
+            default: '24h'
+            example: '7d'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Threat'
+              example:
+                - id: 1
+                  type: "SQL Injection"
+                  source_ip: "192.168.1.10"
+                  target: "login.php"
+                  severity: "high"
+                  timestamp: "2025-04-12T14:30:45Z"
+                  status: "active"
+                - id: 2
+                  type: "Brute Force"
+                  source_ip: "192.168.2.15"
+                  target: "admin portal"
+                  severity: "medium"
+                  timestamp: "2025-04-12T16:42:12Z"
+                  status: "mitigated"
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+    post:
+      summary: Add a new threat
+      description: Manually add a new threat to the system
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewThreat'
+      responses:
+        '201':
+          description: Threat created successfully
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+  
+  /threats/{id}:
+    get:
+      summary: Get threat details
+      description: Returns detailed information about a specific threat
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreatDetail'
+        '404':
+          description: Threat not found
+    
+    put:
+      summary: Update threat information
+      description: Update information for an existing threat
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreatUpdate'
+      responses:
+        '200':
+          description: Threat updated successfully
+        '400':
+          description: Invalid input
+        '404':
+          description: Threat not found
+  
+  /mitigate:
+    post:
+      summary: Trigger threat mitigation
+      description: Initiate automated mitigation for a specific threat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                threat_id:
+                  type: integer
+                  description: ID of the threat to mitigate
+                  example: 1
+                action:
+                  type: string
+                  description: Specific mitigation action to take
+                  example: "block_ip"
+      responses:
+        '200':
+          description: Mitigation initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  action_id:
+                    type: integer
+                    example: 42
+                  message:
+                    type: string
+                    example: "IP 192.168.1.10 blocked successfully"
+        '400':
+          description: Invalid input
+        '404':
+          description: Threat not found
+  
+  /ai/analyze:
+    post:
+      summary: AI-powered threat analysis
+      description: Analyze a threat using AI models
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                threat_description:
+                  type: string
+                  description: Description of the threat to analyze
+                  example: "Multiple login failures from same IP targeting different accounts"
+                context:
+                  type: object
+                  description: Additional context information
+      responses:
+        '200':
+          description: Analysis successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysis:
+                    type: string
+                    example: "This appears to be a credential stuffing attack using a list of stolen credentials."
+                  confidence:
+                    type: number
+                    format: float
+                    example: 0.89
+                  recommended_actions:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Block source IP", "Force password reset for targeted accounts", "Enable CAPTCHA"]
+        '400':
+          description: Invalid input
+  
+  /indicators:
+    get:
+      summary: Get threat indicators
+      description: Retrieve indicators of compromise (IOCs)
+      parameters:
+        - name: type
+          in: query
+          description: Filter by indicator type
+          schema:
+            type: string
+            enum: [ip, domain, url, hash, file]
+        - name: value
+          in: query
+          description: Search by indicator value
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Indicator'
+
+components:
+  schemas:
+    Threat:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: "SQL Injection"
+        source_ip:
+          type: string
+          example: "192.168.1.10"
+        target:
+          type: string
+          example: "login.php"
+        severity:
+          type: string
+          example: "high"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-04-12T14:30:45Z"
+        status:
+          type: string
+          enum: [active, investigating, mitigated, closed]
+          example: "active"
+    
+    ThreatDetail:
+      allOf:
+        - $ref: '#/components/schemas/Threat'
+        - type: object
+          properties:
+            description:
+              type: string
+              example: "SQL injection attempt targeting the authentication form"
+            indicators:
+              type: array
+              items:
+                $ref: '#/components/schemas/Indicator'
+            mitigations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Mitigation'
+            related_threats:
+              type: array
+              items:
+                type: integer
+              example: [2, 5, 8]
+    
+    NewThreat:
+      type: object
+      required:
+        - type
+        - severity
+      properties:
+        type:
+          type: string
+          example: "SQL Injection"
+        source_ip:
+          type: string
+          example: "192.168.1.10"
+        target:
+          type: string
+          example: "login.php"
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          example: "high"
+        description:
+          type: string
+          example: "SQL injection attempt targeting the authentication form"
+    
+    ThreatUpdate:
+      type: object
+      properties:
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        status:
+          type: string
+          enum: [active, investigating, mitigated, closed]
+        description:
+          type: string
+    
+    Indicator:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        type:
+          type: string
+          enum: [ip, domain, url, hash, file]
+          example: "ip"
+        value:
+          type: string
+          example: "192.168.1.10"
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          example: 0.95
+        first_seen:
+          type: string
+          format: date-time
+          example: "2025-04-12T14:30:45Z"
+        last_seen:
+          type: string
+          format: date-time
+          example: "2025-04-12T16:42:12Z"
+    
+    Mitigation:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        action:
+          type: string
+          example: "block_ip"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-04-12T14:35:22Z"
+        status:
+          type: string
+          enum: [pending, success, failed]
+          example: "success"
+        details:
+          type: string
+          example: "IP 192.168.1.10 blocked using firewall rule"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - ApiKeyAuth: []
